@@ -7,6 +7,12 @@
 [![Platform](https://img.shields.io/badge/Android-8.0%20to%2014%2B-blue.svg)]()
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Open%20Source-lightgrey.svg)]()
 
+<p align="center">
+  <img src="screenshots/ghostvault_top.png" width="280" alt="GhostVault BTC Top Dashboard" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/ghostvault_cards.png" width="280" alt="GhostVault BTC Protocol Cards" />
+</p>
+
 ---
 
 ## 🧭 Philosophy: Elastic, Transparent & Sovereign
