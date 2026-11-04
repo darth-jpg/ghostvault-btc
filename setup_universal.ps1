@@ -52,7 +52,7 @@ function Check-Device {
 }
 
 function Invoke-Debloat($dev) {
-    Write-Host "`n--- [STAGE: DEBLOAT & ATTACK SURFACE REDUCTION] ---" -ForegroundColor Cyan
+    Write-Host "`n--- [STAGE: DEBLOAT AND ATTACK SURFACE REDUCTION] ---" -ForegroundColor Cyan
     Write-Host "Stripping telemetry, social tracking, cloud sync, and bloatware packages..." -ForegroundColor Gray
     
     # 44 Universal Packages targeting social trackers, analytics, and non-essential apps.
@@ -86,7 +86,7 @@ function Invoke-Debloat($dev) {
 }
 
 function Invoke-InstallApps($dev) {
-    Write-Host "`n--- [STAGE: INSTALL VAULT & KIOSK ENGINE] ---" -ForegroundColor Cyan
+    Write-Host "`n--- [STAGE: INSTALL VAULT AND KIOSK ENGINE] ---" -ForegroundColor Cyan
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
     $downloadsDir = Join-Path $scriptDir "downloads"
     $blueWalletApk = Join-Path $downloadsDir "BlueWallet.apk"
@@ -135,7 +135,7 @@ function Invoke-InstallApps($dev) {
 }
 
 function Invoke-Hardening($dev) {
-    Write-Host "`n--- [STAGE: AIR-GAP HARDENING & DEVICE OWNER LOCKDOWN] ---" -ForegroundColor Cyan
+    Write-Host "`n--- [STAGE: AIR-GAP HARDENING AND DEVICE OWNER LOCKDOWN] ---" -ForegroundColor Cyan
     
     # Set default home activity
     & adb -s $dev shell "cmd package set-home-activity com.ghostvault.kiosk/.KioskActivity" 2>&1 | Out-Null
@@ -177,7 +177,7 @@ function Invoke-Hardening($dev) {
 }
 
 function Invoke-Revert($dev) {
-    Write-Host "`n--- [STAGE: REVERT & ESCAPE HATCH] ---" -ForegroundColor Yellow
+    Write-Host "`n--- [STAGE: REVERT AND ESCAPE HATCH] ---" -ForegroundColor Yellow
     Write-Host "Reverting device owner restrictions and re-enabling standard radios..." -ForegroundColor Gray
 
     $dpmRes = & adb -s $dev shell "dpm remove-active-admin com.ghostvault.kiosk/.AdminReceiver" 2>&1
