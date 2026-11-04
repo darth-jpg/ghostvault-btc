@@ -261,6 +261,9 @@ public class KioskActivity extends Activity {
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_NETWORK_RESET);
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_OUTGOING_BEAM);
 
+                // Allow seamless USB debugging when user enables it in Developer Options
+                dpm.clearUserRestriction(admin, UserManager.DISALLOW_USB_FILE_TRANSFER);
+
                 // Forbid adding Google / OEM cloud accounts
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_MODIFY_ACCOUNTS);
             }
