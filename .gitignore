@@ -2,6 +2,7 @@
 downloads/*.apk
 *.zip
 *.idsig
+*.keystore
 
 # Build intermediates
 kiosk_app/build/obj/

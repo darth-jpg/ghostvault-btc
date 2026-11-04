@@ -24,6 +24,9 @@ Most commercial hardware wallets are expensive, closed black boxes subject to su
 
 * 🚫 **RF Air-Gap:** Wi-Fi, Bluetooth, NFC, and Cellular Data are permanently disabled at the kernel and service levels.
 * 🔒 **Device Owner MDM Lock:** The custom `GhostKiosk` launcher registers as the official Android **Device Owner**, disabling the status bar pull-down (`StatusBarDisabled`) and policy-locking wireless controls.
+* 🛡️ **Hardware Breakout Defense:** Intercepts physical volume keys (`dispatchKeyEvent`) and applies `DISALLOW_ADJUST_VOLUME` to neutralize volume-slider settings breakout tricks.
+* ⚙️ **Controlled System Settings Access:** Features a dedicated `[ ⚙️ DEVICE & HARDWARE SETTINGS ]` launcher button for legitimate hardware management (display brightness, screen timeout, lock screen PIN) while keeping Wi-Fi, Bluetooth, and Google cloud accounts permanently locked.
+* 📋 **On-Screen Security Protocol Dashboard:** The launcher embeds scrollable dark cards detailing the 25th Word Mandate, the Parachute Test, Dual-PIN Plausible Deniability, and QR Air-Gap rules right on the screen.
 * 🧹 **Attack Surface Reduction:** 55+ background trackers, carrier bloat, Facebook analytics, and Google Cloud daemons are stripped for user 0.
 * 🔑 **Mandatory 25th Word (BIP-39 Passphrase):** Eliminates single-point-of-failure risks. Even if an attacker physically steals your 24 words, your funds remain mathematically unreachable.
 * 🎭 **Plausible Deniability (Dual-PIN Decoy):** Native decoy wallet with a separate PIN for complete protection against the "$5 wrench attack".
