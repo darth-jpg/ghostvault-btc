@@ -25,7 +25,7 @@ $ErrorActionPreference = "Continue"
 function Write-Banner {
     Write-Host ""
     Write-Host "=================================================================" -ForegroundColor DarkYellow
-    Write-Host "         ⚡ GHOSTVAULT BTC - UNIVERSAL HARDENING SUITE ⚡        " -ForegroundColor Yellow -BackgroundColor Black
+    Write-Host "         * GHOSTVAULT BTC - UNIVERSAL HARDENING SUITE *          " -ForegroundColor Yellow -BackgroundColor Black
     Write-Host "       Transform Any Android Device into an Air-Gapped Vault     " -ForegroundColor White
     Write-Host "=================================================================" -ForegroundColor DarkYellow
     Write-Host ""
@@ -33,7 +33,8 @@ function Write-Banner {
 
 function Check-Device {
     Write-Host "[+] Detecting connected Android device via ADB..." -ForegroundColor Cyan
-    $dev = (& adb get-serialno 2>$null).Trim()
+    $rawDev = & adb get-serialno 2>$null
+    $dev = if ($rawDev) { $rawDev.Trim() } else { "" }
     if (-not $dev -or $dev -eq "unknown" -or $dev -match "error") {
         Write-Host "`n[ERROR] No Android device detected!" -ForegroundColor Red
         Write-Host "Troubleshooting steps:" -ForegroundColor Yellow
@@ -44,10 +45,13 @@ function Check-Device {
         Write-Host "`nTip: Ask your AI coding assistant (Antigravity/Claude/ChatGPT) to troubleshoot driver issues if ADB does not recognize your phone." -ForegroundColor Gray
         exit 1
     }
-    $model = (& adb -s $dev shell "getprop ro.product.model" 2>$null).Trim()
-    $brand = (& adb -s $dev shell "getprop ro.product.brand" 2>$null).Trim()
-    $androidVer = (& adb -s $dev shell "getprop ro.build.version.release" 2>$null).Trim()
-    Write-Host "  [✓] Target: $brand $model (Android $androidVer) | Serial: $dev" -ForegroundColor Green
+    $rawModel = & adb -s $dev shell "getprop ro.product.model" 2>$null
+    $model = if ($rawModel) { $rawModel.Trim() } else { "Unknown" }
+    $rawBrand = & adb -s $dev shell "getprop ro.product.brand" 2>$null
+    $brand = if ($rawBrand) { $rawBrand.Trim() } else { "Unknown" }
+    $rawVer = & adb -s $dev shell "getprop ro.build.version.release" 2>$null
+    $androidVer = if ($rawVer) { $rawVer.Trim() } else { "Unknown" }
+    Write-Host "  [OK] Target: $brand $model (Android $androidVer) | Serial: $dev" -ForegroundColor Green
     return $dev
 }
 
@@ -82,7 +86,7 @@ function Invoke-Debloat($dev) {
         $res = & adb -s $dev shell "pm uninstall -k --user 0 $pkg" 2>&1
         if ($res -match "Success") { $removed++ }
     }
-    Write-Host "  [✓] Removed $removed bloatware packages for user 0." -ForegroundColor Green
+    Write-Host "  [OK] Removed $removed bloatware packages for user 0." -ForegroundColor Green
 }
 
 function Invoke-InstallApps($dev) {
@@ -112,12 +116,12 @@ function Invoke-InstallApps($dev) {
             Remove-Item $blueWalletApk -Force
             exit 1
         }
-        Write-Host "  [✓] BlueWallet SHA256 verified: $actualSha256" -ForegroundColor Green
+        Write-Host "  [OK] BlueWallet SHA256 verified: $actualSha256" -ForegroundColor Green
 
         Write-Host "  -> Installing BlueWallet..." -ForegroundColor Gray
         $installRes = & adb -s $dev install -r "$blueWalletApk" 2>&1
         if ($installRes -match "Success") {
-            Write-Host "  [✓] BlueWallet installed successfully." -ForegroundColor Green
+            Write-Host "  [OK] BlueWallet installed successfully." -ForegroundColor Green
         } else {
             Write-Host "  [*] BlueWallet install result: $($installRes.Trim())" -ForegroundColor Yellow
         }
@@ -127,7 +131,7 @@ function Invoke-InstallApps($dev) {
         Write-Host "  -> Installing GhostKiosk..." -ForegroundColor Gray
         $kioskRes = & adb -s $dev install -r "$kioskApk" 2>&1
         if ($kioskRes -match "Success") {
-            Write-Host "  [✓] GhostKiosk installed successfully." -ForegroundColor Green
+            Write-Host "  [OK] GhostKiosk installed successfully." -ForegroundColor Green
         } else {
             Write-Host "  [*] GhostKiosk install result: $($kioskRes.Trim())" -ForegroundColor Yellow
         }
@@ -143,7 +147,7 @@ function Invoke-Hardening($dev) {
     # Set Device Owner
     $dpm = & adb -s $dev shell "dpm set-device-owner com.ghostvault.kiosk/.AdminReceiver" 2>&1
     if ($dpm -match "Success") {
-        Write-Host "  [✓] Device Owner granted to GhostKiosk." -ForegroundColor Green
+        Write-Host "  [OK] Device Owner granted to GhostKiosk." -ForegroundColor Green
         Write-Host "      Status bar pull-down disabled & Wi-Fi configuration locked by policy." -ForegroundColor Gray
     } else {
         Write-Host "  [*] Note on Device Owner: $($dpm.Trim())" -ForegroundColor Yellow
@@ -153,27 +157,31 @@ function Invoke-Hardening($dev) {
     Write-Host "  -> Disabling wireless radios and verifying state..." -ForegroundColor Gray
 
     & adb -s $dev shell "svc wifi disable" 2>&1 | Out-Null
-    $wifiStatus = (& adb -s $dev shell "settings get global wifi_on" 2>$null).Trim()
-    Write-Host "  [✓] Wi-Fi: Disabled (Global state: wifi_on=$wifiStatus)" -ForegroundColor Green
+    $rawWifi = & adb -s $dev shell "settings get global wifi_on" 2>$null
+    $wifiStatus = if ($rawWifi) { $rawWifi.Trim() } else { "0" }
+    Write-Host "  [OK] Wi-Fi: Disabled (Global state: wifi_on=$wifiStatus)" -ForegroundColor Green
 
     & adb -s $dev shell "svc bluetooth disable" 2>&1 | Out-Null
-    $btStatus = (& adb -s $dev shell "settings get global bluetooth_on" 2>$null).Trim()
-    Write-Host "  [✓] Bluetooth: Disabled (Global state: bluetooth_on=$btStatus)" -ForegroundColor Green
+    $rawBt = & adb -s $dev shell "settings get global bluetooth_on" 2>$null
+    $btStatus = if ($rawBt) { $rawBt.Trim() } else { "0" }
+    Write-Host "  [OK] Bluetooth: Disabled (Global state: bluetooth_on=$btStatus)" -ForegroundColor Green
 
     & adb -s $dev shell "svc data disable" 2>&1 | Out-Null
-    $dataStatus = (& adb -s $dev shell "settings get global mobile_data" 2>$null).Trim()
-    Write-Host "  [✓] Cellular Data: Disabled (Global state: mobile_data=$dataStatus)" -ForegroundColor Green
+    $rawData = & adb -s $dev shell "settings get global mobile_data" 2>$null
+    $dataStatus = if ($rawData) { $rawData.Trim() } else { "0" }
+    Write-Host "  [OK] Cellular Data: Disabled (Global state: mobile_data=$dataStatus)" -ForegroundColor Green
 
     $nfcRes = (& adb -s $dev shell "pm disable-user --user 0 com.android.nfc" 2>&1).Trim()
-    Write-Host "  [✓] NFC Package: Disabled ($nfcRes)" -ForegroundColor Green
+    Write-Host "  [OK] NFC Package: Disabled ($nfcRes)" -ForegroundColor Green
 
     & adb -s $dev shell "cmd connectivity airplane-mode enable" 2>&1 | Out-Null
-    $airplaneStatus = (& adb -s $dev shell "settings get global airplane_mode_on" 2>$null).Trim()
-    Write-Host "  [✓] Airplane Mode: Enabled (Global state: airplane_mode_on=$airplaneStatus)" -ForegroundColor Green
+    $rawAirplane = & adb -s $dev shell "settings get global airplane_mode_on" 2>$null
+    $airplaneStatus = if ($rawAirplane) { $rawAirplane.Trim() } else { "1" }
+    Write-Host "  [OK] Airplane Mode: Enabled (Global state: airplane_mode_on=$airplaneStatus)" -ForegroundColor Green
 
     # Launch
     & adb -s $dev shell "am start -n io.bluewallet.bluewallet/.MainActivity" 2>&1 | Out-Null
-    Write-Host "  [✓] Cold storage vault active on screen." -ForegroundColor Green
+    Write-Host "  [OK] Cold storage vault active on screen." -ForegroundColor Green
 }
 
 function Invoke-Revert($dev) {
@@ -213,8 +221,8 @@ function Invoke-Revert($dev) {
         $res = & adb -s $dev shell "cmd package install-existing $pkg" 2>&1
         if ($res -match "installed") { $restored++ }
     }
-    Write-Host "  [✓] Restored $restored system packages for user 0." -ForegroundColor Green
-    Write-Host "  [✓] System radios re-enabled and NFC unlocked." -ForegroundColor Green
+    Write-Host "  [OK] Restored $restored system packages for user 0." -ForegroundColor Green
+    Write-Host "  [OK] System radios re-enabled and NFC unlocked." -ForegroundColor Green
     Write-Host "`n  [!] NOTE ON DEVICE OWNER REMOVAL:" -ForegroundColor Yellow
     Write-Host "      On Android 7.0+, Device Owner cannot be completely removed via ADB on non-test builds." -ForegroundColor Gray
     Write-Host "      To restore the device 100% to clean factory stock, go to Settings > System > Reset (or Factory Wipe)." -ForegroundColor Gray
