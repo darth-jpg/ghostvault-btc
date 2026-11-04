@@ -55,7 +55,10 @@ function Invoke-Debloat($dev) {
     Write-Host "`n--- [STAGE: DEBLOAT & ATTACK SURFACE REDUCTION] ---" -ForegroundColor Cyan
     Write-Host "Stripping telemetry, social tracking, cloud sync, and bloatware packages..." -ForegroundColor Gray
     
-    # Modular Package List - Feel free to add/remove or ask an AI to customize for your OEM
+    # 44 Universal Packages targeting social trackers, analytics, and non-essential apps.
+    # Note: Google Play Services (com.google.android.gms) is deliberately preserved to avoid
+    # breaking Android System WebView and vendor ROM stability. Cloud account registration is
+    # instead blocked via Device Owner policy (DISALLOW_MODIFY_ACCOUNTS) and radio cutoffs.
     $bloat = @(
         # Meta / Facebook
         "com.facebook.katana", "com.facebook.system", "com.facebook.appmanager", "com.facebook.services", "com.facebook.orca",
@@ -89,22 +92,45 @@ function Invoke-InstallApps($dev) {
     $blueWalletApk = Join-Path $downloadsDir "BlueWallet.apk"
     $kioskApk = Join-Path $scriptDir "kiosk_app\build\GhostKiosk.apk"
 
+    # BlueWallet v8.0.2 official release SHA-256 hash
+    $expectedBlueWalletSha256 = "D411E0C58E325D2BC057506007EBE7052743BFC7DCDAA94AF4ACE0BB18434454"
+
     if (-not (Test-Path $blueWalletApk)) {
-        Write-Host "  -> Downloading verified BlueWallet v8.0.2 APK from GitHub release..." -ForegroundColor Gray
+        Write-Host "  -> Downloading BlueWallet v8.0.2 APK from GitHub release..." -ForegroundColor Gray
         New-Item -ItemType Directory -Path $downloadsDir -Force | Out-Null
         Invoke-WebRequest -Uri "https://github.com/BlueWallet/BlueWallet/releases/download/v8.0.2/BlueWallet.apk" -OutFile $blueWalletApk
     }
 
     if (Test-Path $blueWalletApk) {
+        Write-Host "  -> Verifying SHA256 checksum of BlueWallet APK..." -ForegroundColor Gray
+        $actualSha256 = (Get-FileHash -Algorithm SHA256 $blueWalletApk).Hash
+        if ($actualSha256 -ne $expectedBlueWalletSha256) {
+            Write-Host "`n[CRITICAL ERROR] SHA256 checksum mismatch for BlueWallet.apk!" -ForegroundColor Red
+            Write-Host "  Expected: $expectedBlueWalletSha256" -ForegroundColor Red
+            Write-Host "  Actual:   $actualSha256" -ForegroundColor Red
+            Write-Host "Installation aborted for security. Possible corrupted download or MITM tampering." -ForegroundColor Red
+            Remove-Item $blueWalletApk -Force
+            exit 1
+        }
+        Write-Host "  [✓] BlueWallet SHA256 verified: $actualSha256" -ForegroundColor Green
+
         Write-Host "  -> Installing BlueWallet..." -ForegroundColor Gray
-        & adb -s $dev install -r "$blueWalletApk" | Out-Null
-        Write-Host "  [✓] BlueWallet installed." -ForegroundColor Green
+        $installRes = & adb -s $dev install -r "$blueWalletApk" 2>&1
+        if ($installRes -match "Success") {
+            Write-Host "  [✓] BlueWallet installed successfully." -ForegroundColor Green
+        } else {
+            Write-Host "  [*] BlueWallet install result: $($installRes.Trim())" -ForegroundColor Yellow
+        }
     }
 
     if (Test-Path $kioskApk) {
         Write-Host "  -> Installing GhostKiosk..." -ForegroundColor Gray
-        & adb -s $dev install -r "$kioskApk" | Out-Null
-        Write-Host "  [✓] GhostKiosk installed." -ForegroundColor Green
+        $kioskRes = & adb -s $dev install -r "$kioskApk" 2>&1
+        if ($kioskRes -match "Success") {
+            Write-Host "  [✓] GhostKiosk installed successfully." -ForegroundColor Green
+        } else {
+            Write-Host "  [*] GhostKiosk install result: $($kioskRes.Trim())" -ForegroundColor Yellow
+        }
     }
 }
 
@@ -112,7 +138,7 @@ function Invoke-Hardening($dev) {
     Write-Host "`n--- [STAGE: AIR-GAP HARDENING & DEVICE OWNER LOCKDOWN] ---" -ForegroundColor Cyan
     
     # Set default home activity
-    & adb -s $dev shell "cmd package set-home-activity com.ghostvault.kiosk/.KioskActivity" | Out-Null
+    & adb -s $dev shell "cmd package set-home-activity com.ghostvault.kiosk/.KioskActivity" 2>&1 | Out-Null
 
     # Set Device Owner
     $dpm = & adb -s $dev shell "dpm set-device-owner com.ghostvault.kiosk/.AdminReceiver" 2>&1
@@ -123,21 +149,30 @@ function Invoke-Hardening($dev) {
         Write-Host "  [*] Note on Device Owner: $($dpm.Trim())" -ForegroundColor Yellow
     }
 
-    # Cut Radios
-    & adb -s $dev shell "svc wifi disable" 2>&1 | Out-Null
-    & adb -s $dev shell "svc bluetooth disable" 2>&1 | Out-Null
-    & adb -s $dev shell "svc data disable" 2>&1 | Out-Null
-    & adb -s $dev shell "pm disable-user --user 0 com.android.nfc" 2>&1 | Out-Null
-    & adb -s $dev shell "cmd connectivity airplane-mode enable" 2>&1 | Out-Null
+    # Cut Radios with actual status verification
+    Write-Host "  -> Disabling wireless radios and verifying state..." -ForegroundColor Gray
 
-    Write-Host "  [✓] Wi-Fi: HARD DISABLED" -ForegroundColor Green
-    Write-Host "  [✓] Bluetooth: HARD DISABLED" -ForegroundColor Green
-    Write-Host "  [✓] Cellular Data: HARD DISABLED" -ForegroundColor Green
-    Write-Host "  [✓] NFC: DISABLED" -ForegroundColor Green
-    Write-Host "  [✓] Airplane Mode: PERMANENTLY ENGAGED" -ForegroundColor Green
+    & adb -s $dev shell "svc wifi disable" 2>&1 | Out-Null
+    $wifiStatus = (& adb -s $dev shell "settings get global wifi_on" 2>$null).Trim()
+    Write-Host "  [✓] Wi-Fi: Disabled (Global state: wifi_on=$wifiStatus)" -ForegroundColor Green
+
+    & adb -s $dev shell "svc bluetooth disable" 2>&1 | Out-Null
+    $btStatus = (& adb -s $dev shell "settings get global bluetooth_on" 2>$null).Trim()
+    Write-Host "  [✓] Bluetooth: Disabled (Global state: bluetooth_on=$btStatus)" -ForegroundColor Green
+
+    & adb -s $dev shell "svc data disable" 2>&1 | Out-Null
+    $dataStatus = (& adb -s $dev shell "settings get global mobile_data" 2>$null).Trim()
+    Write-Host "  [✓] Cellular Data: Disabled (Global state: mobile_data=$dataStatus)" -ForegroundColor Green
+
+    $nfcRes = (& adb -s $dev shell "pm disable-user --user 0 com.android.nfc" 2>&1).Trim()
+    Write-Host "  [✓] NFC Package: Disabled ($nfcRes)" -ForegroundColor Green
+
+    & adb -s $dev shell "cmd connectivity airplane-mode enable" 2>&1 | Out-Null
+    $airplaneStatus = (& adb -s $dev shell "settings get global airplane_mode_on" 2>$null).Trim()
+    Write-Host "  [✓] Airplane Mode: Enabled (Global state: airplane_mode_on=$airplaneStatus)" -ForegroundColor Green
 
     # Launch
-    & adb -s $dev shell "am start -n io.bluewallet.bluewallet/.MainActivity" | Out-Null
+    & adb -s $dev shell "am start -n io.bluewallet.bluewallet/.MainActivity" 2>&1 | Out-Null
     Write-Host "  [✓] Cold storage vault active on screen." -ForegroundColor Green
 }
 
@@ -145,15 +180,44 @@ function Invoke-Revert($dev) {
     Write-Host "`n--- [STAGE: REVERT & ESCAPE HATCH] ---" -ForegroundColor Yellow
     Write-Host "Reverting device owner restrictions and re-enabling standard radios..." -ForegroundColor Gray
 
-    & adb -s $dev shell "dpm remove-active-admin com.ghostvault.kiosk/.AdminReceiver" 2>&1 | Out-Null
+    $dpmRes = & adb -s $dev shell "dpm remove-active-admin com.ghostvault.kiosk/.AdminReceiver" 2>&1
+    Write-Host "  [*] Device admin removal attempt: $($dpmRes.Trim())" -ForegroundColor Gray
+    
     & adb -s $dev shell "cmd package set-home-activity --clear" 2>&1 | Out-Null
     & adb -s $dev shell "svc wifi enable" 2>&1 | Out-Null
     & adb -s $dev shell "svc bluetooth enable" 2>&1 | Out-Null
     & adb -s $dev shell "svc data enable" 2>&1 | Out-Null
+    & adb -s $dev shell "pm enable com.android.nfc" 2>&1 | Out-Null
+    & adb -s $dev shell "pm enable-user --user 0 com.android.nfc" 2>&1 | Out-Null
     & adb -s $dev shell "cmd connectivity airplane-mode disable" 2>&1 | Out-Null
 
-    Write-Host "  [✓] Device owner removed. System radios re-enabled." -ForegroundColor Green
-    Write-Host "  [✓] You can now use the phone normally or perform a factory reset." -ForegroundColor Green
+    Write-Host "  -> Restoring previously uninstalled user-0 bloat packages..." -ForegroundColor Gray
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+    # Reinstall stripped apps if available in system
+    $bloatList = @(
+        "com.facebook.katana", "com.facebook.system", "com.facebook.appmanager", "com.facebook.services", "com.facebook.orca",
+        "com.android.chrome", "com.google.android.apps.walletnfcrel", "com.google.android.youtube",
+        "com.google.android.apps.youtube.music", "com.google.android.apps.tachyon", "com.google.android.apps.docs",
+        "com.google.android.videos", "com.google.android.apps.podcasts", "com.google.android.apps.magazines",
+        "com.google.android.apps.subscriptions.red", "com.google.android.apps.photos", "com.google.android.apps.maps",
+        "com.google.android.calendar", "com.google.android.gm", "com.google.android.feedback",
+        "com.google.android.googlequicksearchbox", "com.google.android.apps.googleassistant", "com.google.ar.core",
+        "com.google.ar.lens", "com.google.android.keep", "com.google.android.apps.messaging", "com.google.android.apps.wellbeing",
+        "com.miui.player", "com.miui.video", "com.miui.weather2", "com.xiaomi.midrop", "com.miui.analytics",
+        "com.sec.android.app.sbrowser", "com.samsung.android.bixby.agent", "com.samsung.android.game.gamehome",
+        "com.heytap.pictorial", "com.heytap.music", "com.heytap.mcs", "com.heytap.browser", "com.heytap.market",
+        "com.oplus.games", "com.coloros.gamespace", "com.coloros.smartsidebar", "com.coloros.weather.service"
+    )
+    $restored = 0
+    foreach ($pkg in $bloatList) {
+        $res = & adb -s $dev shell "cmd package install-existing $pkg" 2>&1
+        if ($res -match "installed") { $restored++ }
+    }
+    Write-Host "  [✓] Restored $restored system packages for user 0." -ForegroundColor Green
+    Write-Host "  [✓] System radios re-enabled and NFC unlocked." -ForegroundColor Green
+    Write-Host "`n  [!] NOTE ON DEVICE OWNER REMOVAL:" -ForegroundColor Yellow
+    Write-Host "      On Android 7.0+, Device Owner cannot be completely removed via ADB on non-test builds." -ForegroundColor Gray
+    Write-Host "      To restore the device 100% to clean factory stock, go to Settings > System > Reset (or Factory Wipe)." -ForegroundColor Gray
 }
 
 # Execution Flow

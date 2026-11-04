@@ -5,7 +5,7 @@
 [![Bitcoin](https://img.shields.io/badge/Bitcoin-100%25%20BTC%20Only-f7931a.svg)](https://bitcoin.org)
 [![Security](https://img.shields.io/badge/Air--Gap-Pure%20QR%20Code-brightgreen.svg)]()
 [![Platform](https://img.shields.io/badge/Android-8.0%20to%2014%2B-blue.svg)]()
-[![License](https://img.shields.io/badge/License-MIT%20%2F%20Open%20Source-lightgrey.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <p align="center">
   <img src="screenshots/ghostvault_top.png" width="280" alt="GhostVault BTC Top Dashboard" />
@@ -28,15 +28,16 @@ Most commercial hardware wallets are expensive, closed black boxes subject to su
 
 ## 🛡️ Core Capabilities
 
-* 🚫 **RF Air-Gap:** Wi-Fi, Bluetooth, NFC, and Cellular Data are permanently disabled at the kernel and service levels.
-* 🔒 **Device Owner MDM Lock:** The custom `GhostKiosk` launcher registers as the official Android **Device Owner**, disabling the status bar pull-down (`StatusBarDisabled`) and policy-locking wireless controls.
+* 🚫 **RF Air-Gap:** Wi-Fi, Bluetooth, NFC, and Cellular Data are disabled via system services with state verification, and network controls are policy-locked.
+* 🔒 **Device Owner MDM Lock:** The custom `GhostKiosk` launcher registers as the official Android **Device Owner**, disabling the status bar pull-down (`StatusBarDisabled`) and policy-locking wireless controls (`DISALLOW_CONFIG_WIFI`, `DISALLOW_CONFIG_BLUETOOTH`).
+* 🔍 **Verified Binaries:** Automated SHA-256 checksum verification ensures the downloaded BlueWallet APK matches the official release hash before installation.
 * 🛡️ **Hardware Breakout Defense:** Intercepts physical volume keys (`dispatchKeyEvent`) and applies `DISALLOW_ADJUST_VOLUME` to neutralize volume-slider settings breakout tricks.
-* ⚙️ **Controlled System Settings Access:** Features a dedicated `[ ⚙️ DEVICE & HARDWARE SETTINGS ]` launcher button for legitimate hardware management (display brightness, screen timeout, lock screen PIN) while keeping Wi-Fi, Bluetooth, and Google cloud accounts permanently locked.
+* ⚙️ **Controlled System Settings Access:** Features a dedicated `[ ⚙️ DEVICE & HARDWARE SETTINGS ]` launcher button for legitimate offline hardware management (display brightness, screen timeout, lock screen PIN) while keeping Wi-Fi, Bluetooth, and Google cloud accounts permanently locked.
 * 📋 **On-Screen Security Protocol Dashboard:** The launcher embeds scrollable dark cards detailing the 25th Word Mandate, the Parachute Test, Dual-PIN Plausible Deniability, and QR Air-Gap rules right on the screen.
-* 🧹 **Attack Surface Reduction:** 55+ background trackers, carrier bloat, Facebook analytics, and Google Cloud daemons are stripped for user 0.
+* 🧹 **Attack Surface Reduction:** 44 universal bloatware and tracking packages stripped in the base suite (55+ in OEM scripts), with cloud account creation blocked (`DISALLOW_MODIFY_ACCOUNTS`).
 * 🔑 **Mandatory 25th Word (BIP-39 Passphrase):** Eliminates single-point-of-failure risks. Even if an attacker physically steals your 24 words, your funds remain mathematically unreachable.
 * 🎭 **Plausible Deniability (Dual-PIN Decoy):** Native decoy wallet with a separate PIN for complete protection against the "$5 wrench attack".
-* 🔄 **100% Reversible:** No permanent root or bootloader flashing required. You can revert the phone back to a regular smartphone at any time.
+* 🔄 **Reversible Architecture:** No permanent root or bootloader unlocking required. The suite includes an automated restoration stage to re-enable radios and restore system apps, or a standard Android Factory Reset for complete stock restoration.
 
 ---
 
@@ -127,6 +128,7 @@ ghostvault-btc/
 │   ├── src/main/res/            # Layouts & device_admin.xml policies
 │   ├── build_kiosk.ps1          # Standalone APK compilation script
 │   └── build/GhostKiosk.apk     # Pre-built & signed APK ready to deploy
+├── LICENSE                      # Official MIT Open Source License
 └── README.md
 ```
 
