@@ -65,8 +65,9 @@ This guarantees that even if a physical user accesses device settings (e.g. to a
 
 1. **Set a Strong Numeric PIN (6 to 8 digits) on the Lock Screen:**
    * Do NOT use biometric fingerprint or facial recognition. Biometrics can be coerced physically; a secret PIN exists only in your mind.
-2. **Permanent USB Port Lockdown:**
-   * Once setup and recovery verification are complete, navigate to **Settings > Developer Options** and toggle **"USB Debugging" OFF**. The physical USB port will refuse all computer communication.
+2. **Pre-Seed USB Cable Disconnect & Port Lockdown:**
+   * Immediately after running the automated provisioning script, **unplug the USB cable** and navigate to **Settings > Developer Options** to toggle **"USB Debugging" OFF** *before* opening BlueWallet to create the wallet.
+   * This guarantees that entropy calculation, seed mnemonic display, and the 25th word passphrase entry occur with 0% chance of physical or host-PC interception (e.g. malicious screencap/adb daemons).
 3. **Stainless Steel Seed Storage:**
    * Store your 24 words punched into stainless steel or titanium to survive fires and floods.
    * **Never** store the 25th word on the same plate.

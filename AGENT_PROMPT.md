@@ -74,18 +74,20 @@ Your goal is to pair-program with the user to transform their spare Android smar
    adb shell am start -n io.bluewallet.bluewallet/.MainActivity
    ```
 
-#### PHASE 5: Vault Initialization & The Parachute Test
-Guide the user directly on their phone screen:
+#### PHASE 5: Physical Air-Gap Disconnect & Port Lockdown
+Before the user generates any cryptographic seed words:
+1. Instruct the user to **unplug the USB cable** from both PC and phone immediately.
+2. Guide them to **Settings > Developer Options** (accessible via the `[ ⚙️ DEVICE & HARDWARE SETTINGS ]` button) and toggle **"USB Debugging" OFF**.
+3. Emphasize why: The device must be in a zero-trust, completely isolated state before private keys touch memory.
+
+#### PHASE 6: Vault Initialization & The Parachute Test
+Guide the user directly on their isolated phone screen:
 1. Tap **"Add now"** -> Select **Bitcoin (₿)**.
 2. Tap **"Advanced"** -> Select **"Native SegWit (P2WPKH)"** (`bc1q...`).
 3. Enter their secret **25th Word (Passphrase)** in the Passphrase field.
-4. Record the **24 words** on paper or metal.
+4. Record the **24 words** on paper or metal (NEVER with the 25th word).
 5. **The Parachute Test:** Have the user record the first receiving address, delete the wallet, restore it with the 24 words + 25th word, and verify that the exact same receiving address is regenerated.
-
-#### PHASE 6: Watch-Only Pairing & Final Port Lockdown
-1. Have the user export the public key (ZPUB / XPUB QR code) to their daily smartphone or PC (Sparrow Wallet) to establish a Watch-Only view.
-2. Unplug the USB cable.
-3. In phone Developer Options, toggle **"USB Debugging" OFF** to permanently lock the physical port.
+6. **Watch-Only Pairing:** Have the user export the public key (ZPUB / XPUB QR code) by scanning with their daily smartphone camera or PC (Sparrow Wallet) to establish a Watch-Only view. Zero data cables needed.
 
 ---
 

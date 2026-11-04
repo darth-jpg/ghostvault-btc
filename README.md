@@ -89,16 +89,26 @@ Automatically debloats, installs BlueWallet and GhostKiosk, applies Device Owner
 
 ## 🔑 Initializing Your Vault (On the Phone Screen)
 
-1. Tap **"Add now"** -> Select **Bitcoin (₿)**.
-2. Tap **"Advanced"** at the bottom:
-   * **Address Type:** Choose **"Native SegWit (P2WPKH)"** (`bc1q...`).
-   * **Passphrase:** Enter your secret **25th Word**.
-3. Tap **"Create"**.
-4. Write down the **24 words** on paper or steel.
-   > [!IMPORTANT]
-   > **NEVER** write the 25th word on the same paper or plate as the 24 words.
-5. Tap the **three dots (`...`)** on your new wallet -> **"Show XPUB"** and scan the QR code into your daily smartphone (BlueWallet) or PC ([Sparrow Wallet](https://sparrowwallet.com)) to establish a **Watch-Only** wallet.
-6. Unplug the USB cable and toggle **"USB Debugging" OFF** in Developer Options.
+> [!IMPORTANT]
+> **Zero-Trust Rule:** The USB cable MUST be unplugged and USB Debugging disabled **BEFORE** generating cryptographic seed words or entering your 25th word passphrase. Your private keys must never exist in device memory while physically connected to a PC.
+
+1. **Sever Data Cable & Lock Port:**
+   * Unplug the USB cable from the phone and PC.
+   * Go to **Settings > Developer Options** (accessible via the `[ ⚙️ DEVICE & HARDWARE SETTINGS ]` button) and toggle **"USB Debugging" OFF**.
+   * Your vault is now completely air-gapped (zero wireless, zero data cables).
+2. **Create New Vault:**
+   * Open BlueWallet, tap **"Add now"** -> Select **Bitcoin (₿)**.
+3. **Configure Advanced BIP-39 Passphrase:**
+   * Tap **"Advanced"** at the bottom:
+     * **Address Type:** Choose **"Native SegWit (P2WPKH)"** (`bc1q...`).
+     * **Passphrase:** Enter your secret **25th Word**.
+4. **Generate & Backup Seed:**
+   * Tap **"Create"**.
+   * Write down the **24 words** on paper or steel.
+   * **NEVER** write the 25th word on the same paper or plate as the 24 words.
+5. **Export Watch-Only XPUB via Pure QR:**
+   * Tap the **three dots (`...`)** on your new wallet -> **"Show XPUB"**.
+   * Scan the displayed QR code with your daily smartphone (BlueWallet) or PC ([Sparrow Wallet](https://sparrowwallet.com)) to establish a **Watch-Only** wallet. No USB or data connection is ever required.
 
 ---
 

@@ -43,6 +43,13 @@ The 25th word provides the ultimate defense against physical coercion, extortion
 
 Follow these exact steps on your air-gapped phone screen (in BlueWallet):
 
+### Step 0: Sever Data Cable & Lock Port (Air-Gap First)
+> [!IMPORTANT]
+> **Zero-Trust Rule:** Never generate entropy, seed words, or passphrases while connected to a PC.
+1. Unplug the USB cable from the phone and PC immediately after the provisioning script completes.
+2. Navigate to **Settings > Developer Options** (accessible via `[ ⚙️ DEVICE & HARDWARE SETTINGS ]`) and toggle **"USB Debugging" OFF**.
+3. The device is now 100% physically and logically isolated before any cryptographic material touches memory.
+
 ### Step 1: Create New Wallet
 1. Tap **"Add now"** (or the `+` icon in the top right).
 2. Enter a discreet wallet name (e.g., `Cold Vault` or `GhostVault`).

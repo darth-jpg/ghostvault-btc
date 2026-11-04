@@ -257,11 +257,15 @@ Write-Host ""
 Write-Host "=================================================================" -ForegroundColor DarkYellow
 Write-Host "                      SETUP COMPLETED                            " -ForegroundColor Yellow -BackgroundColor Black
 Write-Host "=================================================================" -ForegroundColor DarkYellow
-Write-Host "NEXT STEPS ON THE PHONE SCREEN:" -ForegroundColor White
-Write-Host "  1. Tap 'Add now' -> Select 'Bitcoin'."
-Write-Host "  2. Tap 'Advanced' -> Select 'Native SegWit (P2WPKH)'."
-Write-Host "  3. Enter your SECRET 25TH WORD in the 'Passphrase' field."
-Write-Host "  4. Write down the 24 words on paper/metal (NEVER store the 25th word in the same place)."
-Write-Host "  5. Unplug USB and disable USB Debugging in phone Developer Options."
+Write-Host "CRITICAL OPSEC STEP BEFORE SEED CREATION:" -ForegroundColor Red
+Write-Host "  1. UNPLUG the USB cable from this computer and the phone NOW." -ForegroundColor Yellow
+Write-Host "  2. Go to Settings > Developer Options and toggle 'USB Debugging' OFF." -ForegroundColor Yellow
+Write-Host "     (Guarantees zero PC connectivity while keys are generated in memory)" -ForegroundColor Gray
+Write-Host "`nNEXT STEPS ON THE ISOLATED PHONE SCREEN:" -ForegroundColor White
+Write-Host "  3. In BlueWallet: Tap 'Add now' -> Select 'Bitcoin'."
+Write-Host "  4. Tap 'Advanced' -> Select 'Native SegWit (P2WPKH)'."
+Write-Host "  5. Enter your SECRET 25TH WORD in the 'Passphrase' field."
+Write-Host "  6. Write down the 24 words on paper/metal (NEVER store with the 25th word)."
+Write-Host "  7. Export XPUB via optical QR code to your daily phone or PC."
 Write-Host "=================================================================" -ForegroundColor DarkYellow
 Write-Host ""
