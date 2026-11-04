@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GhostVault</string>
+    <string name="badge_text">AIR-GAPPED BITCOIN VAULT</string>
+    <string name="sub_text">100% Offline Hardware Signer\nZero Wireless • Zero Network • Pure QR Air-Gap</string>
+    <string name="btn_text">OPEN BITCOIN VAULT  ➜</string>
+</resources>

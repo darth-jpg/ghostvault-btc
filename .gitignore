@@ -1,0 +1,15 @@
+# Large APK downloads (auto-downloaded by script)
+downloads/*.apk
+*.zip
+*.idsig
+
+# Build intermediates
+kiosk_app/build/obj/
+kiosk_app/build/gen/
+kiosk_app/build/res.zip
+kiosk_app/build/unaligned.apk
+kiosk_app/build/classes.dex
+
+# OS generated
+Thumbs.db
+.DS_Store
