@@ -65,7 +65,7 @@ public class KioskActivity extends Activity {
         sub.setTextColor(0xFFAAAAAA);
         sub.setTextSize(13);
         sub.setGravity(Gravity.CENTER);
-        sub.setPadding(0, 0, 0, 35);
+        sub.setPadding(0, 0, 0, 30);
         root.addView(sub);
 
         // Primary Action Launch Button
@@ -89,6 +89,31 @@ public class KioskActivity extends Activity {
             }
         });
         root.addView(btn);
+
+        addSpacer(root, 15);
+
+        // Secondary Button: Controlled System Settings
+        Button settingsBtn = new Button(this);
+        settingsBtn.setText("⚙️  DEVICE & HARDWARE SETTINGS");
+        settingsBtn.setTextColor(0xFFCCCCCC);
+        settingsBtn.setTextSize(13);
+        settingsBtn.setTypeface(null, Typeface.BOLD);
+        settingsBtn.setPadding(30, 24, 30, 24);
+
+        GradientDrawable settingsShape = new GradientDrawable();
+        settingsShape.setShape(GradientDrawable.RECTANGLE);
+        settingsShape.setCornerRadius(20f);
+        settingsShape.setColor(0xFF191919);
+        settingsShape.setStroke(2, 0xFF333333);
+        settingsBtn.setBackground(settingsShape);
+
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSettings();
+            }
+        });
+        root.addView(settingsBtn);
 
         // Spacer
         addSpacer(root, 35);
@@ -235,9 +260,23 @@ public class KioskActivity extends Activity {
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_CONFIG_TETHERING);
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_NETWORK_RESET);
                 dpm.addUserRestriction(admin, UserManager.DISALLOW_OUTGOING_BEAM);
-                dpm.addUserRestriction(admin, UserManager.DISALLOW_USB_FILE_TRANSFER);
+
+                // Forbid adding Google / OEM cloud accounts
+                dpm.addUserRestriction(admin, UserManager.DISALLOW_MODIFY_ACCOUNTS);
             }
         } catch (Throwable ignored) {}
+    }
+
+    private void openSettings() {
+        try {
+            Intent intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Throwable t) {
+            try {
+                Toast.makeText(this, "Opening settings...", Toast.LENGTH_SHORT).show();
+            } catch (Throwable ignored) {}
+        }
     }
 
     private void launchVault() {
